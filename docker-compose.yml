@@ -1,0 +1,67 @@
+# adonis-catalog
+
+
+# compose syntax version.
+version: "3.6"
+
+# services declaration.
+services:
+  # MySQL
+  mysql:
+    image: mariadb
+    container_name: adonis-catalog-mysql
+    volumes:
+      - mysql-data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_DATABASE=adonis_catalog
+    ports:
+      - target: 3306
+        published: 3365
+  # Redis
+  redis:
+    image: redis:5-alpine
+    container_name: adonis-catalog-redis
+    volumes:
+      - redis-data:/data
+    ports:
+      - target: 6379
+        published: 63795
+  # Web Application
+  web:
+    image: node:14-alpine
+    container_name: adonis-catalog-app
+    user: node
+    working_dir: /home/node/app
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - .:/home/node/app
+    ports:
+      - target: 3333
+        published: 3335
+    command: "node ace serve --watch"
+    links:
+      - mysql
+      - redis
+      - mailhog
+  # MailHog
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: adonis-catalog-mailhog
+    ports:
+      - target: 1025
+        published: 1125
+      - target: 8025
+        published: 8825
+
+# volumes declaration.
+volumes:
+  # mysql-data
+  mysql-data:
+    driver: local
+  # redis-data
+  redis-data:
+    driver: local
